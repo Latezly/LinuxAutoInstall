@@ -59,7 +59,8 @@ d-i partman/early_command string \
     awk '$2 == 0 && $3 == "disk" {print $1}' | \
     grep -E '/dev/vda|/dev/nvme[0-9]n1|/dev/sd[a-z]|/dev/xvda' | \
     sort | head -n 1)"; \
-  debconf-set partman-auto/disk "$ONEDISK";
+  debconf-set partman-auto/disk "$ONEDISK"; \
+  debconf-set grub-installer/bootdev "$ONEDISK";
 
 # 常规分区
 d-i partman-auto/method string regular
