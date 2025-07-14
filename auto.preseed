@@ -55,10 +55,15 @@ d-i clock-setup/ntp boolean true
 #       debconf-set grub-installer/bootdev "$ONEDISK";
 
 d-i partman/early_command string \
-  ONEDISK="$(lsblk -ndo NAME,RM,TYPE -p | \
-    awk '$2 == 0 && $3 == "disk" {print $1}' | \
-    grep -E '/dev/vda|/dev/nvme[0-9]n1|/dev/sd[a-z]|/dev/xvda' | \
-    sort | head -n 1)"; \
+  for dev in /sys/block/*; do \
+    name=$(basename "$dev"); \
+    if [ -e "/sys/block/$name/device" ] && \
+       [ "$(cat /sys/block/$name/removable)" = "0" ] && \
+       echo "$name" | grep -Eq '^sd|^vd|^xvd|^nvme'; then \
+      ONEDISK="/dev/$name"; \
+      break; \
+    fi; \
+  done; \
   debconf-set partman-auto/disk "$ONEDISK"; \
   debconf-set grub-installer/bootdev "$ONEDISK";
 
