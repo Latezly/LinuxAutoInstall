@@ -1,0 +1,132 @@
+### 本地化
+# 中文
+d-i debian-installer/locale string en_US.UTF-8
+d-i keyboard-configuration/xkb-keymap select us
+d-i localechooser/supported-locales multiselect en_US.UTF-8, zh_CN.UTF-8
+ 
+ 
+### 网络
+d-i netcfg/enable boolean true
+d-i netcfg/choose_interface select auto
+d-i netcfg/get_hostname string debian
+d-i netcfg/get_domain string
+#d-i netcfg/disable_autoconfig boolean true
+#d-i netcfg/confirm_static boolean true
+#d-i netcfg/get_ipaddress string 192.168.10.20
+#d-i netcfg/get_netmask string 255.255.255.0
+#d-i netcfg/get_gateway string 192.168.10.1
+#d-i netcfg/get_nameservers string 8.8.8.8
+ 
+### Network console
+#d-i anna/choose_modules string network-console
+#d-i network-console/password password passwd
+#d-i network-console/password-again password passwd
+ 
+ 
+### Mirror
+d-i mirror/country string manual
+d-i mirror/http/hostname string mirrors.tencent.com
+d-i mirror/http/directory string /debian
+d-i mirror/http/proxy string
+ 
+ 
+### Account setup
+d-i passwd/make-user boolean false
+#d-i passwd/user-fullname string VDI
+#d-i passwd/username string vdi
+#d-i passwd/user-password-crypted password $6$tqS.VkgdFyXhE7Zd$gAbPpQ.fD8Zb0A3AjDuWzfYuwNntQ9fUHHqCmjmthNyIGbdfKCdrtgEi4hfuaZulx16BTuGMbvNe4K/v/B58Q/
+d-i passwd/root-login boolean true
+#d-i passwd/root-password password 123456
+#d-i passwd/root-password-again password 123456
+d-i passwd/root-password-crypted password $6$.DeAsiPZNH4qqwE0$rh2/hbaedb0rOOEt6mqFNWIzKpuMsY5bACkv1y/gwQ74lZhbwzytC8zODqshojyx.w7fqri6G7Wn4knfW0YQ21
+ 
+ 
+### 时区
+d-i clock-setup/utc boolean true
+d-i time/zone string Asia/Shanghai
+d-i clock-setup/ntp boolean true
+ 
+### 分区
+#d-i partman-auto/disk string /dev/[sv]da
+# 用第一块盘来操作分区
+#d-i partman/early_command string \
+#       ONEDISK="$(lsblk -l -n -o NAME -d -p | grep '/dev/vda\|/dev/nvme0n1\|/dev/sda\|/dev/xvda'|sort|tail -n 1)"; \
+#       debconf-set partman-auto/disk "$ONEDISK"; \
+#       debconf-set grub-installer/bootdev "$ONEDISK";
+
+d-i partman/early_command string \
+  ONEDISK="$(lsblk -ndo NAME,RM,TYPE -p | \
+    awk '$2 == 0 && $3 == "disk" {print $1}' | \
+    grep -E '/dev/vda|/dev/nvme[0-9]n1|/dev/sd[a-z]|/dev/xvda' | \
+    sort | head -n 1)"; \
+  debconf-set partman-auto/disk "$ONEDISK";
+
+# 常规分区
+d-i partman-auto/method string regular
+# 禁止swap分区
+d-i partman-basicfilesystems/no_swap boolean false
+# 如果硬盘内之前有lvm或是raid的分区，全部删除
+d-i partman-lvm/device_remove_lvm boolean true
+d-i partman-md/device_remove_md boolean true
+ 
+# 分区，一个boot分区最小512M，1优先级，最大1024M
+d-i partman-auto/expert_recipe string                    \
+      boot-root ::                                       \
+              512 1 1024 ext4                            \
+                 $primary{ } $bootable{ }                \
+                 method{ format } format{ }              \
+                 use_filesystem{ } filesystem{ ext4 }    \
+                 mountpoint{ /boot }                     \
+              .                                          \
+              1 2 -1 ext4                             \
+                  method{ format } format{ }             \
+                  use_filesystem{ } filesystem{ ext4 }    \
+                  mountpoint{ / }                        \
+              .                                         
+ 
+# 非交互式完成分区
+## 确认是否写入新的分区标签。设置为"true"表示允许写入新的分区标签。
+d-i partman-partitioning/confirm_write_new_label boolean true
+## 安装程序在选择分区时选择“完成”选项，即跳过手动选择分区的步骤。
+d-i partman/choose_partition select finish
+## 确认分区的操作。设置为"true"表示允许自动确认分区操作。
+d-i partman/confirm boolean true
+## 确认是否覆盖分区。设置为"true"表示允许自动确认分区操作
+d-i partman/confirm_nooverwrite boolean true
+ 
+### Apt setup
+# 不启用非自由（non-free）软件包源。
+d-i apt-setup/non-free boolean true
+# 启用贡献（contrib）软件包源。
+d-i apt-setup/contrib boolean true
+# 选择了主要（main）软件包源，以确保安装基本软件。
+d-i apt-setup/services-select multiselect main
+# 允许在安装过程中使用未经身份验证的软件包源。
+d-i debian-installer/allow_unauthenticated boolean true
+# 光盘相关
+d-i apt-setup/cdrom/set-first boolean false
+d-i apt-setup/cdrom/set-next boolean false  
+d-i apt-setup/cdrom/set-failed boolean false
+#d-i apt-setup/use_mirror boolean false
+d-i apt-setup/security_host string mirrors.tencent.com
+ 
+### Package selection
+# 标准安装
+tasksel tasksel/first multiselect standard
+d-i pkgsel/upgrade select none
+d-i pkgsel/language-packs multiselect en, zh
+d-i pkgsel/include string openssh-server
+d-i pkgsel/update-policy select none
+ 
+# 禁止在安装的时候弹出popularity
+popularity-contest popularity-contest/participate boolean false
+ 
+### Boot loader installation
+#d-i grub-installer/only_debian boolean true
+d-i grub-installer/bootdev string
+ 
+# 安装完成之后不要弹出安装完成的界面，直接重启
+d-i finish-install/reboot_in_progress note
+ 
+d-i preseed/late_command string \
+    in-target sh -c 'wget -qO /tmp/init.sh https://gh-proxy.com/raw.githubusercontent.com/Latezly/LinuxAutoInstall/refs/heads/main/init.sh && chmod +x /tmp/init.sh && /tmp/init.sh'
