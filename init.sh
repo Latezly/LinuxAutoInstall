@@ -142,7 +142,7 @@ EOF
 
 install_packages() {
     apt update && apt -y upgrade
-    apt -y install git curl wget vim screen htop neofetch python3 python3-pip bc jq lrzsz vnstat sysstat nload iftop net-tools
+    apt -y install git curl wget vim screen htop neofetch python3 python3-pip bc jq lrzsz vnstat sysstat nload iftop net-tools bash-completion prometheus-node-exporter
 }
 
 others(){
