@@ -1,20 +1,6 @@
 #!/bin/bash
 set -e
 
-modify_ssh_config() {
-    sed -i 's/^#\?Port .*/Port 4747/' /etc/ssh/sshd_config
-    sed -i 's/^#\?PermitRootLogin .*/PermitRootLogin without-password/' /etc/ssh/sshd_config
-    sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/sshd_config
-
-    if systemctl is-active --quiet ssh; then
-        systemctl restart ssh
-    elif systemctl is-active --quiet sshd; then
-        systemctl restart sshd
-    else
-        echo "警告: 未找到 ssh 服务，请手动检查"
-    fi
-}
-
 configure_ssh_keys() {
     mkdir -p /root/.ssh
     chmod 700 /root/.ssh
@@ -145,17 +131,33 @@ install_packages() {
     apt -y install git curl wget vim screen htop neofetch python3 python3-pip bc jq lrzsz vnstat sysstat nload iftop net-tools bash-completion prometheus-node-exporter
 }
 
+modify_ssh_config() {
+    sed -i 's/^#\?Port .*/Port 4747/' /etc/ssh/sshd_config
+    sed -i 's/^#\?PermitRootLogin .*/PermitRootLogin without-password/' /etc/ssh/sshd_config
+    sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/sshd_config
+
+    if systemctl is-active --quiet ssh; then
+        systemctl restart ssh
+    elif systemctl is-active --quiet sshd; then
+        systemctl restart sshd
+    else
+        echo "警告: 未找到 ssh 服务，请手动检查"
+    fi
+}
+
 others(){
     > /etc/motd
 }
 
+
+
 main() {
-    modify_ssh_config
     configure_ssh_keys
     write_bashrc
     update_profile
     change_apt_source
     install_packages
+    modify_ssh_config
     others
 }
 
