@@ -118,11 +118,38 @@ update_profile() {
 }
 
 change_apt_source() {
-    cat > /etc/apt/sources.list << 'EOF'
-deb https://mirrors.cernet.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
-deb https://mirrors.cernet.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
-deb https://mirrors.cernet.edu.cn/debian/ bookworm-backports main contrib non-free non-free-firmware
-deb https://mirrors.cernet.edu.cn/debian-security bookworm-security main contrib non-free non-free-firmware
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        DEBIAN_VERSION=$VERSION_ID
+    else
+        echo "无法检测 Debian 版本"
+        exit 1
+    fi
+
+    case "$DEBIAN_VERSION" in
+        "10")
+            CODENAME="buster"
+            ;;
+        "11")
+            CODENAME="bullseye"
+            ;;
+        "12")
+            CODENAME="bookworm"
+            ;;
+        "13")
+            CODENAME="trixie"
+            ;;
+        *)
+            echo "未支持的 Debian 版本: $DEBIAN_VERSION"
+            exit 1
+            ;;
+    esac
+
+    cat > /etc/apt/sources.list << EOF
+deb https://mirrors.cernet.edu.cn/debian/ $CODENAME main contrib non-free non-free-firmware
+deb https://mirrors.cernet.edu.cn/debian/ $CODENAME-updates main contrib non-free non-free-firmware
+deb https://mirrors.cernet.edu.cn/debian/ $CODENAME-backports main contrib non-free non-free-firmware
+deb https://mirrors.cernet.edu.cn/debian-security $CODENAME-security main contrib non-free non-free-firmware
 EOF
 }
 
