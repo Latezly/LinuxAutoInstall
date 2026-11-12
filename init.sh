@@ -154,7 +154,7 @@ EOF
 }
 
 install_packages() {
-    apt update && apt -y upgrade
+    apt update && apt -y -o Dpkg::Options::="--force-confold" upgrade
     apt -y install git curl wget vim screen htop python3 python3-pip bc jq lrzsz vnstat sysstat nload iftop net-tools bash-completion prometheus-node-exporter unzip lm-sensors lrzsz neofetch network-manager
 }
 
