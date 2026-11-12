@@ -1,6 +1,25 @@
 #!/bin/bash
 set -e
 
+MIRROR_HOST="mirrors.cernet.edu.cn"
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --mirrors)
+            MIRROR_HOST="$2"
+            shift 2
+            ;;
+        --mirrors=*)
+            MIRROR_HOST="${1#*=}"
+            shift
+            ;;
+        *)
+            echo "未知参数: $1"
+            exit 1
+            ;;
+    esac
+done
+
 configure_ssh_keys() {
     mkdir -p /root/.ssh
     chmod 700 /root/.ssh
@@ -146,10 +165,10 @@ change_apt_source() {
     esac
 
     cat > /etc/apt/sources.list << EOF
-deb https://mirrors.cernet.edu.cn/debian/ $CODENAME main contrib non-free non-free-firmware
-deb https://mirrors.cernet.edu.cn/debian/ $CODENAME-updates main contrib non-free non-free-firmware
-deb https://mirrors.cernet.edu.cn/debian/ $CODENAME-backports main contrib non-free non-free-firmware
-deb https://mirrors.cernet.edu.cn/debian-security $CODENAME-security main contrib non-free non-free-firmware
+deb https://$MIRROR_HOST/debian/ $CODENAME main contrib non-free non-free-firmware
+deb https://$MIRROR_HOST/debian/ $CODENAME-updates main contrib non-free non-free-firmware
+deb https://$MIRROR_HOST/debian/ $CODENAME-backports main contrib non-free non-free-firmware
+deb https://$MIRROR_HOST/debian-security $CODENAME-security main contrib non-free non-free-firmware
 EOF
 }
 
