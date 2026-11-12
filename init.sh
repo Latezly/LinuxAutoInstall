@@ -187,6 +187,7 @@ basic_auth_users:
   prometheus: $2b$12$iWvGeZc2EjerWBm62z9TkeX2qZ2C.Oh0PCaM2rrpvYajk9EZKP7.6
 EOF
     chmod 600 /etc/node_exporter/web.yml
+    chown prometheus /etc/node_exporter/web.yml
 
     cat > /etc/default/prometheus-node-exporter << 'EOF'
 # Set the command-line arguments to pass to the server.
