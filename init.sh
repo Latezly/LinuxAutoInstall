@@ -174,6 +174,7 @@ EOF
 
 install_packages() {
     export DEBIAN_FRONTEND=noninteractive
+    export UCF_FORCE_CONFFOLD=1
     apt update && apt -y -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" upgrade
     apt -y install git curl wget vim screen htop python3 python3-pip bc jq lrzsz vnstat sysstat nload iftop net-tools bash-completion prometheus-node-exporter unzip lm-sensors lrzsz neofetch network-manager
 }
